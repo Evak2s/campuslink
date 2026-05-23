@@ -13,7 +13,6 @@ function Profile({
 
         <button
           className="close-btn"
-
           onClick={() =>
             setSelectedUser(null)
           }
@@ -21,13 +20,16 @@ function Profile({
           ✕
         </button>
 
+
         <img
           className="profile-avatar"
-
-          src={user.avatar}
-
+          src={
+           user.photo ||
+           "https://ui-avatars.com/api/?name=" +
+           (user.user || "K")
+          }
           alt=""
-        />
+        />  
 
         <h2>
           {user.user}
@@ -36,6 +38,25 @@ function Profile({
         <p>
           {user.mbti}
         </p>
+
+        <button
+          className="message-btn"
+          onClick={() => {
+
+            localStorage.setItem(
+              "selectedUser",
+              JSON.stringify(user)
+            );
+
+            window.location.hash =
+              "#messages";
+
+            setSelectedUser(null);
+
+          }}
+        >
+          💬 Envoyer un message
+        </button>
 
         <div className="profile-bio">
 
@@ -96,6 +117,7 @@ function Profile({
       </div>
 
     </div>
+
   );
 }
 

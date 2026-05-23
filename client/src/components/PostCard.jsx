@@ -4,7 +4,8 @@ import {
 
 function PostCard({
   post,
-  profile
+  profile,
+  setSelectedUser
 }) {
 
   const [likes, setLikes] =
@@ -40,9 +41,7 @@ function PostCard({
 
         <img
           className="avatar"
-
           src={post.photo}
-
           alt=""
         />
       );
@@ -74,7 +73,15 @@ function PostCard({
 
         <div>
 
-          <h3>
+          <h3
+            style={{
+              cursor: "pointer"
+            }}
+
+            onClick={() =>
+              setSelectedUser(post)
+            }
+          >
             {post.user}
           </h3>
 
@@ -102,9 +109,7 @@ function PostCard({
 
         <img
           className="post-image"
-
           src={post.image}
-
           alt=""
         />
 
@@ -141,15 +146,15 @@ function PostCard({
         {comments.map(
           (c, index) => (
 
-          <div
-            key={index}
+            <div
+              key={index}
+              className="comment"
+            >
+              {c}
+            </div>
 
-            className="comment"
-          >
-            {c}
-          </div>
-
-        ))}
+          )
+        )}
 
       </div>
 
@@ -157,11 +162,8 @@ function PostCard({
 
         <input
           type="text"
-
           placeholder="Ajouter un commentaire..."
-
           value={comment}
-
           onChange={(e) =>
             setComment(
               e.target.value

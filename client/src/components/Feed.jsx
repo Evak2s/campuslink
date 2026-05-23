@@ -15,18 +15,12 @@ import {
   db
 } from "../firebase";
 
-import Sidebar
-from "./Sidebar";
+import Sidebar from "./Sidebar";
+import PostCard from "./PostCard";
+import Messages from "./Messages";
+import Profile from "./Profile";
 
-import PostCard
-from "./PostCard";
-
-import Messages
-from "./Messages";
-
-function Feed({
-  profile
-}) {
+function Feed({ profile }) {
 
   const [posts, setPosts] =
     useState([]);
@@ -40,6 +34,10 @@ function Feed({
 
   const [page, setPage] =
     useState("feed");
+
+  const [selectedUser,
+    setSelectedUser] =
+    useState(null);
 
   useEffect(() => {
 
@@ -72,9 +70,7 @@ function Feed({
 
   }, []);
 
-  function compressImage(
-    file
-  ) {
+  function compressImage(file) {
 
     return new Promise(
       (resolve) => {
@@ -82,9 +78,7 @@ function Feed({
         const reader =
           new FileReader();
 
-        reader.readAsDataURL(
-          file
-        );
+        reader.readAsDataURL(file);
 
         reader.onload =
           (event) => {
@@ -130,14 +124,11 @@ function Feed({
                   canvas.height
                 );
 
-                const compressed =
+                resolve(
                   canvas.toDataURL(
                     "image/jpeg",
                     0.5
-                  );
-
-                resolve(
-                  compressed
+                  )
                 );
               };
           };
@@ -145,9 +136,7 @@ function Feed({
     );
   }
 
-  async function handleImage(
-    e
-  ) {
+  async function handleImage(e) {
 
     const file =
       e.target.files[0];
@@ -193,6 +182,9 @@ function Feed({
           degree:
             profile.degree,
 
+          photo:
+            profile.photo,
+
           text:
             message,
 
@@ -212,7 +204,6 @@ function Feed({
       );
 
       setMessage("");
-
       setSelectedImage("");
 
     } catch (error) {
@@ -223,6 +214,27 @@ function Feed({
         error.message
       );
     }
+  }
+
+  if (selectedUser) {
+
+    return (
+
+      <div className="app">
+
+        <Sidebar
+          profile={profile}
+          setPage={setPage}
+        />
+
+        <Profile
+          user={selectedUser}
+          setSelectedUser={setSelectedUser}
+        />
+
+      </div>
+
+    );
   }
 
   if (
@@ -243,6 +255,7 @@ function Feed({
         />
 
       </div>
+
     );
   }
 
@@ -261,12 +274,8 @@ function Feed({
 
           <input
             type="text"
-
-            placeholder=
-              "Partage une vibe campus..."
-
+            placeholder="Partage une vibe campus..."
             value={message}
-
             onChange={(e) =>
               setMessage(
                 e.target.value
@@ -276,24 +285,15 @@ function Feed({
 
           <input
             type="file"
-
             accept="image/*"
-
-            onChange={
-              handleImage
-            }
+            onChange={handleImage}
           />
 
           <button
             className="post-btn"
-
-            onClick={
-              createPost
-            }
+            onClick={createPost}
           >
-
             Poster
-
           </button>
 
         </div>
@@ -303,18 +303,17 @@ function Feed({
           {posts.map(
             (post) => (
 
-            <PostCard
+              <PostCard
+                key={post.id}
+                post={post}
+                profile={profile}
+                setSelectedUser={
+                  setSelectedUser
+                }
+              />
 
-              key={post.id}
-
-              post={post}
-
-              profile={
-                profile
-              }
-            />
-
-          ))}
+            )
+          )}
 
         </div>
 
