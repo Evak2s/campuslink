@@ -16,6 +16,7 @@ import {
 } from "../firebase";
 
 import Sidebar from "./Sidebar";
+import Rightbar from "./Rightbar";
 import PostCard from "./PostCard";
 import Messages from "./Messages";
 import Profile from "./Profile";
@@ -171,25 +172,25 @@ function Feed({ profile }) {
         {
 
           uid:
-            auth.currentUser.uid,
+            auth.currentUser?.uid || "",
 
           user:
-            profile.username,
+            profile?.username || "",
 
           mbti:
-            profile.mbti,
+            profile?.mbti || "",
 
           degree:
-            profile.degree,
+            profile?.degree || "",
 
           photo:
-            profile.photo,
+            profile?.photo || "",
 
           text:
             message,
 
           image:
-            selectedImage,
+            selectedImage || "",
 
           tag:
             "✨ Mood",
@@ -318,6 +319,8 @@ function Feed({ profile }) {
         </div>
 
       </main>
+
+      <Rightbar />
 
     </div>
   );

@@ -1,3 +1,5 @@
+import AIMatch from "./AIMatch";
+
 function Rightbar() {
 
   return (
@@ -10,7 +12,9 @@ function Rightbar() {
           ✨ Vibes compatibles
         </h3>
 
-        <p>Camille — ENFP</p>
+        <p>
+          Camille — ENFP
+        </p>
 
         <span>
           3 amis en commun
@@ -34,7 +38,10 @@ function Rightbar() {
 
       </div>
 
+      <AIMatch />
+
     </aside>
+
   );
 }
 
