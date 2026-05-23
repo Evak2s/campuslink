@@ -1,6 +1,16 @@
+import { useState } from "react";
+
 import {
-  useState
-} from "react";
+  doc,
+  updateDoc,
+  arrayUnion,
+  increment,
+  addDoc,
+  collection,
+  serverTimestamp
+} from "firebase/firestore";
+
+import { db } from "../firebase";
 
 function PostCard({
   post,
@@ -17,28 +27,75 @@ function PostCard({
   const [comment, setComment] =
     useState("");
 
-  function addComment() {
+  const [liked, setLiked] =
+    useState(false);
 
-    if (!comment.trim())
-      return;
+  // ❤️ LIKE
+  async function handleLike() {
 
-    setComments([
-      ...comments,
-      `${profile.username} : ${comment}`
-    ]);
+    if (liked) return;
 
-    setComment("");
+    try {
+
+      await updateDoc(
+        doc(db, "posts", post.id),
+        {
+          likes: increment(1)
+        }
+      );
+
+      setLikes(likes + 1);
+      setLiked(true);
+
+      await addDoc(collection(db, "notifications"), {
+        from: profile.username,
+        text: `a aimé ton post : "${post.text.slice(0, 25)}..." ❤️`,
+        createdAt: serverTimestamp()
+      });
+
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  // 💬 COMMENTAIRE
+  async function addComment() {
+
+    if (!comment.trim()) return;
+
+    const newComment = {
+      user: profile.username,
+      text: comment
+    };
+
+    try {
+
+      await updateDoc(
+        doc(db, "posts", post.id),
+        {
+          comments: arrayUnion(newComment)
+        }
+      );
+
+      setComments([...comments, newComment]);
+      setComment("");
+
+      await addDoc(collection(db, "notifications"), {
+        from: profile.username,
+        text: `a commenté : "${comment.slice(0, 25)}..." 💬`,
+        createdAt: serverTimestamp()
+      });
+
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   function renderAvatar() {
 
-    if (
-      post.photo &&
-      typeof post.photo === "string"
-    ) {
+    if (post.photo) {
 
       return (
-
         <img
           className="avatar"
           src={post.photo}
@@ -48,17 +105,8 @@ function PostCard({
     }
 
     return (
-
       <div className="avatar-letter">
-
-        {
-          post.user
-            ? post.user
-                .charAt(0)
-                .toUpperCase()
-            : "K"
-        }
-
+        {post.user?.charAt(0)?.toUpperCase() || "K"}
       </div>
     );
   }
@@ -74,25 +122,14 @@ function PostCard({
         <div>
 
           <h3
-            style={{
-              cursor: "pointer"
-            }}
-
-            onClick={() =>
-              setSelectedUser(post)
-            }
+            style={{ cursor: "pointer" }}
+            onClick={() => setSelectedUser(post)}
           >
             {post.user}
           </h3>
 
           <p>
-
-            {post.mbti}
-
-            {" • "}
-
-            {post.degree}
-
+            {post.mbti} • {post.degree}
           </p>
 
         </div>
@@ -100,34 +137,24 @@ function PostCard({
       </div>
 
       <div className="post-tag">
-
         {post.tag}
-
       </div>
 
       {post.image && (
-
         <img
           className="post-image"
           src={post.image}
           alt=""
         />
-
       )}
 
       <p className="post-text">
-
         {post.text}
-
       </p>
 
       <div className="post-actions">
 
-        <button
-          onClick={() =>
-            setLikes(likes + 1)
-          }
-        >
+        <button onClick={handleLike}>
           ❤️ {likes}
         </button>
 
@@ -135,45 +162,27 @@ function PostCard({
           💬 {comments.length}
         </button>
 
-        <button>
-          🔖
-        </button>
-
       </div>
 
       <div className="comments">
 
-        {comments.map(
-          (c, index) => (
-
-            <div
-              key={index}
-              className="comment"
-            >
-              {c}
-            </div>
-
-          )
-        )}
+        {comments.map((c, i) => (
+          <div key={i} className="comment">
+            <strong>{c.user}:</strong> {c.text}
+          </div>
+        ))}
 
       </div>
 
       <div className="comment-box">
 
         <input
-          type="text"
-          placeholder="Ajouter un commentaire..."
           value={comment}
-          onChange={(e) =>
-            setComment(
-              e.target.value
-            )
-          }
+          onChange={(e) => setComment(e.target.value)}
+          placeholder="Ajouter un commentaire..."
         />
 
-        <button
-          onClick={addComment}
-        >
+        <button onClick={addComment}>
           ➤
         </button>
 

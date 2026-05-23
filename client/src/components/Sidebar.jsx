@@ -15,21 +15,16 @@ function Sidebar({
 
     await signOut(auth);
 
-    localStorage.removeItem(
-      "kamp-profile"
-    );
+    localStorage.removeItem("kamp-profile");
 
     window.location.reload();
   }
 
   function renderAvatar() {
 
-    if (
-      profile.photo
-    ) {
+    if (profile.photo) {
 
       return (
-
         <img
           className="sidebar-avatar"
           src={profile.photo}
@@ -39,15 +34,8 @@ function Sidebar({
     }
 
     return (
-
       <div className="sidebar-letter">
-
-        {
-          profile.username
-            ?.charAt(0)
-            .toUpperCase()
-        }
-
+        {profile.username?.charAt(0)?.toUpperCase()}
       </div>
     );
   }
@@ -56,35 +44,21 @@ function Sidebar({
 
     <aside className="sidebar">
 
-      <h1>
-        KAMP
-      </h1>
+      <h1>KAMP</h1>
 
-      <button
-        onClick={() =>
-          setPage("feed")
-        }
-      >
+      <button onClick={() => setPage("feed")}>
         🏠 Feed
       </button>
 
-      <button
-        onClick={() =>
-          setPage("messages")
-        }
-      >
+      <button onClick={() => setPage("messages")}>
         💬 Messages
       </button>
 
-      <button>
+      <button onClick={() => setPage("notifications")}>
         🔔 Notifications
       </button>
 
-      <button
-        onClick={() =>
-          setPage("aimatch")
-        }
-      >
+      <button onClick={() => setPage("aimatch")}>
         🧠 IA Match
       </button>
 
@@ -92,29 +66,16 @@ function Sidebar({
 
         {renderAvatar()}
 
-        <h3>
-          {profile.username}
-        </h3>
+        <h3>{profile.username}</h3>
 
         <p>
-
-          {profile.mbti}
-
-          {" • "}
-
-          {profile.degree}
-
+          {profile.mbti} • {profile.degree}
         </p>
 
       </div>
 
-      <button
-        className="logout-btn"
-        onClick={logout}
-      >
-
+      <button onClick={logout} className="logout-btn">
         Déconnexion
-
       </button>
 
     </aside>

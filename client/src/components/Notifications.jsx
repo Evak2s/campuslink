@@ -1,91 +1,89 @@
 import {
   useEffect,
   useState
-}
-from "react";
+} from "react";
 
 import {
   collection,
   onSnapshot,
   query,
   orderBy
-}
-from "firebase/firestore";
+} from "firebase/firestore";
 
-import { db }
-from "../firebase";
+import { db } from "../firebase";
 
 function Notifications() {
 
-  const [
-    notifications,
-    setNotifications
-  ] = useState([]);
+  const [notifications, setNotifications] =
+    useState([]);
 
   useEffect(() => {
 
     const q = query(
-
-      collection(
-        db,
-        "notifications"
-      ),
-
-      orderBy(
-        "createdAt",
-        "desc"
-      )
+      collection(db, "notifications"),
+      orderBy("createdAt", "desc")
     );
 
     const unsubscribe =
-      onSnapshot(
-        q,
+      onSnapshot(q, (snapshot) => {
 
-        (snapshot) => {
+        const data =
+          snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }));
 
-          const loaded =
-            snapshot.docs.map(
-              (doc) => ({
-                id: doc.id,
-                ...doc.data()
-              })
-            );
+        setNotifications(data);
+      });
 
-          setNotifications(
-            loaded
-          );
-        }
-      );
-
-    return () =>
-      unsubscribe();
+    return () => unsubscribe();
 
   }, []);
+
+  function handleClick(notif) {
+
+    // simple version : on log pour tester
+    console.log("Notification cliquée :", notif);
+
+    // futur upgrade :
+    // ouvrir post ou profil
+    // window.location.hash = ...
+  }
 
   return (
 
     <div className="notifications">
 
-      <h3>
-        Notifications
-      </h3>
+      <h2>🔔 Notifications</h2>
 
-      {notifications.map(
-        (notif) => (
+      {notifications.length === 0 ? (
+        <p>Aucune notification</p>
+      ) : (
+
+        notifications.map((n) => (
 
           <div
-            key={notif.id}
-
-            className="notif-card"
+            key={n.id}
+            onClick={() => handleClick(n)}
+            style={{
+              padding: "10px",
+              borderBottom: "1px solid #eee",
+              cursor: "pointer",
+              backgroundColor: "#fafafa"
+            }}
           >
 
-            {notif.text}
+            <strong>{n.from}</strong>
+            <p>{n.text}</p>
 
           </div>
-        )
+
+        ))
+
       )}
 
     </div>
+
   );
 }
 
