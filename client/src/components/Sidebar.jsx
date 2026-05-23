@@ -32,9 +32,7 @@ function Sidebar({
 
         <img
           className="sidebar-avatar"
-
           src={profile.photo}
-
           alt=""
         />
       );
@@ -72,9 +70,7 @@ function Sidebar({
 
       <button
         onClick={() =>
-          setPage(
-            "messages"
-          )
+          setPage("messages")
         }
       >
         💬 Messages
@@ -84,7 +80,11 @@ function Sidebar({
         🔔 Notifications
       </button>
 
-      <button>
+      <button
+        onClick={() =>
+          setPage("aimatch")
+        }
+      >
         🧠 IA Match
       </button>
 
@@ -110,7 +110,6 @@ function Sidebar({
 
       <button
         className="logout-btn"
-
         onClick={logout}
       >
 

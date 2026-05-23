@@ -20,6 +20,7 @@ import Rightbar from "./Rightbar";
 import PostCard from "./PostCard";
 import Messages from "./Messages";
 import Profile from "./Profile";
+import AIMatchPage from "./AIMatchPage";
 
 function Feed({ profile }) {
 
@@ -254,6 +255,26 @@ function Feed({ profile }) {
         <Messages
           profile={profile}
         />
+
+      </div>
+
+    );
+  }
+
+  if (
+    page === "aimatch"
+  ) {
+
+    return (
+
+      <div className="app">
+
+        <Sidebar
+          profile={profile}
+          setPage={setPage}
+        />
+
+        <AIMatchPage />
 
       </div>
 
