@@ -1,85 +1,133 @@
-import { useState } from "react";
+import {
+  useState
+} from "react";
 
 function PostCard({
   post,
-  posts,
-  setPosts,
-  index,
-  setSelectedUser
+  profile
 }) {
 
-  const [comment, setComment]
-    = useState("");
+  const [likes, setLikes] =
+    useState(post.likes || 0);
+
+  const [comments, setComments] =
+    useState(post.comments || []);
+
+  const [comment, setComment] =
+    useState("");
+
+  function addComment() {
+
+    if (!comment.trim())
+      return;
+
+    setComments([
+      ...comments,
+      `${profile.username} : ${comment}`
+    ]);
+
+    setComment("");
+  }
+
+  function renderAvatar() {
+
+    if (
+      post.photo &&
+      typeof post.photo === "string"
+    ) {
+
+      return (
+
+        <img
+          className="avatar"
+
+          src={post.photo}
+
+          alt=""
+        />
+      );
+    }
+
+    return (
+
+      <div className="avatar-letter">
+
+        {
+          post.user
+            ? post.user
+                .charAt(0)
+                .toUpperCase()
+            : "K"
+        }
+
+      </div>
+    );
+  }
 
   return (
 
     <div className="post-card">
 
-      <div
-        className="post-user"
+      <div className="post-header">
 
-        onClick={() =>
-          setSelectedUser(post)
-        }
-      >
-
-        <img
-          className="mini-avatar"
-          src={post.avatar}
-          alt=""
-        />
+        {renderAvatar()}
 
         <div>
 
-          <strong>
+          <h3>
             {post.user}
-            {" • "}
-            {post.mbti}
-          </strong>
+          </h3>
 
-          <span>
-            3 amis en commun
-          </span>
+          <p>
+
+            {post.mbti}
+
+            {" • "}
+
+            {post.degree}
+
+          </p>
 
         </div>
 
       </div>
 
-      <div className="tags">
-        <span>{post.tag}</span>
+      <div className="post-tag">
+
+        {post.tag}
+
       </div>
 
-      <img
-        className="post-image"
-        src={post.image}
-        alt=""
-      />
+      {post.image && (
 
-      <p>
+        <img
+          className="post-image"
+
+          src={post.image}
+
+          alt=""
+        />
+
+      )}
+
+      <p className="post-text">
+
         {post.text}
+
       </p>
 
       <div className="post-actions">
 
         <button
-
-          onClick={() => {
-
-            const updated = [
-              ...posts
-            ];
-
-            updated[index]
-              .likes += 1;
-
-            setPosts(updated);
-          }}
+          onClick={() =>
+            setLikes(likes + 1)
+          }
         >
-          ❤️ {post.likes}
+          ❤️ {likes}
         </button>
 
         <button>
-          💬 {post.comments.length}
+          💬 {comments.length}
         </button>
 
         <button>
@@ -90,61 +138,42 @@ function PostCard({
 
       <div className="comments">
 
-        {post.comments.map(
-          (c, i) => (
+        {comments.map(
+          (c, index) => (
 
-            <div
-              className="comment"
-              key={i}
-            >
-              {c}
-            </div>
+          <div
+            key={index}
 
-          )
-        )}
-
-        <div className="comment-form">
-
-          <input
-            type="text"
-
-            placeholder=
-              "Ajouter un commentaire..."
-
-            value={comment}
-
-            onChange={(e) =>
-              setComment(
-                e.target.value
-              )
-            }
-          />
-
-          <button
-
-            onClick={() => {
-
-              if (
-                comment.trim() === ""
-              )
-                return;
-
-              const updated = [
-                ...posts
-              ];
-
-              updated[index]
-                .comments.push(comment);
-
-              setPosts(updated);
-
-              setComment("");
-            }}
+            className="comment"
           >
-            ➤
-          </button>
+            {c}
+          </div>
 
-        </div>
+        ))}
+
+      </div>
+
+      <div className="comment-box">
+
+        <input
+          type="text"
+
+          placeholder="Ajouter un commentaire..."
+
+          value={comment}
+
+          onChange={(e) =>
+            setComment(
+              e.target.value
+            )
+          }
+        />
+
+        <button
+          onClick={addComment}
+        >
+          ➤
+        </button>
 
       </div>
 

@@ -1,22 +1,145 @@
-import { useState } from "react";
+import {
+  useEffect,
+  useState
+} from "react";
 
-function Messages() {
+import {
+  addDoc,
+  collection,
+  onSnapshot,
+  orderBy,
+  query,
+  serverTimestamp
+} from "firebase/firestore";
 
-  const [text, setText]
-    = useState("");
+import {
+  auth,
+  db
+} from "../firebase";
 
-  const [messages, setMessages]
-    = useState([
-      {
-        sender: "Lina",
-        text: "T’es à la BU ?"
-      },
+function Messages({
+  profile
+}) {
 
-      {
-        sender: "Moi",
-        text: "Oui 😭"
-      }
-    ]);
+  const [text, setText] =
+    useState("");
+
+  const [messages, setMessages] =
+    useState([]);
+
+  const [currentRoom,
+    setCurrentRoom] =
+    useState("general");
+
+  const rooms = [
+
+    {
+      id: "general",
+      name: "💬 Général"
+    },
+
+    {
+      id: "revision",
+      name: "📚 Révisions"
+    },
+
+    {
+      id: "gaming",
+      name: "🎮 Gaming"
+    },
+
+    {
+      id: "night",
+      name: "🌙 Vocal nuit"
+    }
+  ];
+
+  useEffect(() => {
+
+    const q = query(
+
+      collection(
+        db,
+        "rooms",
+        currentRoom,
+        "messages"
+      ),
+
+      orderBy(
+        "createdAt",
+        "asc"
+      )
+    );
+
+    const unsubscribe =
+      onSnapshot(
+
+        q,
+
+        (snapshot) => {
+
+          const loaded =
+            snapshot.docs.map(
+              (doc) => ({
+                id: doc.id,
+                ...doc.data()
+              })
+            );
+
+          setMessages(
+            loaded
+          );
+        }
+      );
+
+    return () =>
+      unsubscribe();
+
+  }, [currentRoom]);
+
+  async function sendMessage() {
+
+    if (
+      !text.trim()
+    ) return;
+
+    try {
+
+      await addDoc(
+
+        collection(
+          db,
+          "rooms",
+          currentRoom,
+          "messages"
+        ),
+
+        {
+
+          uid:
+            auth.currentUser.uid,
+
+          sender:
+            profile.username,
+
+          text,
+
+          createdAt:
+            serverTimestamp()
+        }
+      );
+
+      setText("");
+
+    } catch (error) {
+
+      console.log(error);
+
+      alert(
+        error.message
+      );
+    }
+  }
 
   return (
 
@@ -25,30 +148,36 @@ function Messages() {
       <div className="chat-sidebar">
 
         <h2>
-          Messages
+          Salons
         </h2>
 
-        <div className="chat-user active">
+        {rooms.map((room) => (
 
-          <img
-            src="https://i.pravatar.cc/150?img=32"
-            alt=""
-          />
+          <div
 
-          <span>Lina</span>
+            key={room.id}
 
-        </div>
+            className={
 
-        <div className="chat-user">
+              currentRoom === room.id
 
-          <img
-            src="https://i.pravatar.cc/150?img=12"
-            alt=""
-          />
+              ? "chat-room active"
 
-          <span>Noah</span>
+              : "chat-room"
+            }
 
-        </div>
+            onClick={() =>
+              setCurrentRoom(
+                room.id
+              )
+            }
+          >
+
+            {room.name}
+
+          </div>
+
+        ))}
 
       </div>
 
@@ -56,45 +185,45 @@ function Messages() {
 
         <div className="chat-header">
 
-          <img
-            src="https://i.pravatar.cc/150?img=32"
-            alt=""
-          />
-
-          <div>
-
-            <strong>
-              Lina
-            </strong>
-
-            <p>
-              En ligne
-            </p>
-
-          </div>
+          {
+            rooms.find(
+              (r) =>
+                r.id === currentRoom
+            )?.name
+          }
 
         </div>
 
         <div className="chat-messages">
 
-          {messages.map(
-            (msg, i) => (
+          {messages.map((msg) => (
 
-              <div
+            <div
 
-                key={i}
+              key={msg.id}
 
-                className={
-                  msg.sender === "Moi"
-                    ? "my-message"
-                    : "their-message"
-                }
-              >
+              className={
+
+                msg.sender ===
+                profile.username
+
+                ? "my-message"
+
+                : "their-message"
+              }
+            >
+
+              <strong>
+                {msg.sender}
+              </strong>
+
+              <p>
                 {msg.text}
-              </div>
+              </p>
 
-            )
-          )}
+            </div>
+
+          ))}
 
         </div>
 
@@ -109,33 +238,20 @@ function Messages() {
             value={text}
 
             onChange={(e) =>
-              setText(e.target.value)
+              setText(
+                e.target.value
+              )
             }
           />
 
           <button
-
-            onClick={() => {
-
-              if (
-                text.trim() === ""
-              )
-                return;
-
-              setMessages([
-                ...messages,
-
-                {
-                  sender: "Moi",
-
-                  text
-                }
-              ]);
-
-              setText("");
-            }}
+            onClick={
+              sendMessage
+            }
           >
+
             ➤
+
           </button>
 
         </div>

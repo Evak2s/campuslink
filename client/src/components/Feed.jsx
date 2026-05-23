@@ -1,138 +1,261 @@
-import { useState } from "react";
+import {
+  useEffect,
+  useState
+} from "react";
 
-import Sidebar from "./Sidebar";
-import PostCard from "./PostCard";
-import Rightbar from "./Rightbar";
-import Profile from "./Profile";
-import Messages from "./Messages";
+import {
+  addDoc,
+  collection,
+  onSnapshot,
+  serverTimestamp
+} from "firebase/firestore";
 
-function Feed() {
+import {
+  auth,
+  db
+} from "../firebase";
 
-  const [message, setMessage]
-    = useState("");
+import Sidebar
+from "./Sidebar";
 
-  const [selectedImage, setSelectedImage]
-    = useState(null);
+import PostCard
+from "./PostCard";
 
-  const [selectedUser, setSelectedUser]
-    = useState(null);
+import Messages
+from "./Messages";
 
-  const [page, setPage]
-    = useState("feed");
+function Feed({
+  profile
+}) {
 
-  const [posts, setPosts]
-    = useState([
-      {
-        user: "Lina",
+  const [posts, setPosts] =
+    useState([]);
 
-        mbti: "ENFP",
+  const [message, setMessage] =
+    useState("");
 
-        avatar:
-          "https://i.pravatar.cc/150?img=32",
+  const [selectedImage,
+    setSelectedImage] =
+    useState("");
 
-        image:
-          "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
+  const [page, setPage] =
+    useState("feed");
 
-        text:
-          "Ambiance calme aujourd’hui à la BU 📚",
+  useEffect(() => {
 
-        tag: "📍 Campus",
+    const unsubscribe =
+      onSnapshot(
 
-        likes: 24,
+        collection(
+          db,
+          "posts"
+        ),
 
-        comments: [
-          "J’arrive 😭"
-        ]
-      },
+        (snapshot) => {
 
-      {
-        user: "Noah",
+          const loadedPosts =
+            snapshot.docs.map(
+              (doc) => ({
+                id: doc.id,
+                ...doc.data()
+              })
+            );
 
-        mbti: "INTJ",
+          setPosts(
+            loadedPosts.reverse()
+          );
+        }
+      );
 
-        avatar:
-          "https://i.pravatar.cc/150?img=12",
+    return () =>
+      unsubscribe();
 
-        image:
-          "https://images.unsplash.com/photo-1500648767791-00dcc994a43e",
+  }, []);
 
-        text:
-          "Le café du campus ☕",
+  function compressImage(
+    file
+  ) {
 
-        tag: "☕ Café",
+    return new Promise(
+      (resolve) => {
 
-        likes: 11,
+        const reader =
+          new FileReader();
 
-        comments: [
-          "Incroyable"
-        ]
+        reader.readAsDataURL(
+          file
+        );
+
+        reader.onload =
+          (event) => {
+
+            const img =
+              new Image();
+
+            img.src =
+              event.target.result;
+
+            img.onload =
+              () => {
+
+                const canvas =
+                  document.createElement(
+                    "canvas"
+                  );
+
+                const maxWidth =
+                  500;
+
+                const scale =
+                  maxWidth /
+                  img.width;
+
+                canvas.width =
+                  maxWidth;
+
+                canvas.height =
+                  img.height *
+                  scale;
+
+                const ctx =
+                  canvas.getContext(
+                    "2d"
+                  );
+
+                ctx.drawImage(
+                  img,
+                  0,
+                  0,
+                  canvas.width,
+                  canvas.height
+                );
+
+                const compressed =
+                  canvas.toDataURL(
+                    "image/jpeg",
+                    0.5
+                  );
+
+                resolve(
+                  compressed
+                );
+              };
+          };
       }
-    ]);
+    );
+  }
 
-  const profile = {
-    username: "Yanis",
+  async function handleImage(
+    e
+  ) {
 
-    mbti: "INTP",
+    const file =
+      e.target.files[0];
 
-    avatar:
-      "https://i.pravatar.cc/150?img=15",
-  };
+    if (!file) return;
 
-  if (page === "messages") {
+    const compressed =
+      await compressImage(
+        file
+      );
+
+    setSelectedImage(
+      compressed
+    );
+  }
+
+  async function createPost() {
+
+    try {
+
+      if (
+        !message.trim()
+      ) return;
+
+      await addDoc(
+
+        collection(
+          db,
+          "posts"
+        ),
+
+        {
+
+          uid:
+            auth.currentUser.uid,
+
+          user:
+            profile.username,
+
+          mbti:
+            profile.mbti,
+
+          degree:
+            profile.degree,
+
+          text:
+            message,
+
+          image:
+            selectedImage,
+
+          tag:
+            "✨ Mood",
+
+          likes: 0,
+
+          comments: [],
+
+          createdAt:
+            serverTimestamp()
+        }
+      );
+
+      setMessage("");
+
+      setSelectedImage("");
+
+    } catch (error) {
+
+      console.log(error);
+
+      alert(
+        error.message
+      );
+    }
+  }
+
+  if (
+    page === "messages"
+  ) {
 
     return (
 
-      <>
+      <div className="app">
 
         <Sidebar
           profile={profile}
-
           setPage={setPage}
         />
 
-        <Messages />
+        <Messages
+          profile={profile}
+        />
 
-      </>
+      </div>
     );
   }
 
   return (
 
-    <>
+    <div className="app">
 
       <Sidebar
         profile={profile}
-
         setPage={setPage}
       />
 
       <main className="feed">
-
-        <div className="stories">
-
-          <div className="story-card">
-
-            <img
-              src="https://i.pravatar.cc/150?img=32"
-              alt=""
-            />
-
-            <span>Lina</span>
-
-          </div>
-
-          <div className="story-card">
-
-            <img
-              src="https://i.pravatar.cc/150?img=12"
-              alt=""
-            />
-
-            <span>Noah</span>
-
-          </div>
-
-        </div>
 
         <div className="topbar">
 
@@ -145,7 +268,9 @@ function Feed() {
             value={message}
 
             onChange={(e) =>
-              setMessage(e.target.value)
+              setMessage(
+                e.target.value
+              )
             }
           />
 
@@ -154,85 +279,38 @@ function Feed() {
 
             accept="image/*"
 
-            onChange={(e) => {
-
-              const file =
-                e.target.files[0];
-
-              if (file) {
-
-                setSelectedImage(
-                  URL.createObjectURL(file)
-                );
-              }
-            }}
+            onChange={
+              handleImage
+            }
           />
 
           <button
             className="post-btn"
 
-            onClick={() => {
-
-              if (
-                message.trim() === ""
-              )
-                return;
-
-              setPosts([
-                {
-                  user:
-                    profile.username,
-
-                  mbti:
-                    profile.mbti,
-
-                  avatar:
-                    profile.avatar,
-
-                  image:
-                    selectedImage ||
-
-                    "https://images.unsplash.com/photo-1523240795612-9a054b0db644",
-
-                  text: message,
-
-                  tag: "✨ Mood",
-
-                  likes: 0,
-
-                  comments: []
-                },
-
-                ...posts
-              ]);
-
-              setMessage("");
-
-              setSelectedImage(null);
-            }}
+            onClick={
+              createPost
+            }
           >
+
             Poster
+
           </button>
 
         </div>
 
         <div className="posts">
 
-          {posts.map((post, index) => (
+          {posts.map(
+            (post) => (
 
             <PostCard
-              key={index}
+
+              key={post.id}
 
               post={post}
 
-              posts={posts}
-
-              setPosts={setPosts}
-
-              index={index}
-
-              setSelectedUser={
-                setSelectedUser
+              profile={
+                profile
               }
             />
 
@@ -242,18 +320,7 @@ function Feed() {
 
       </main>
 
-      <Rightbar />
-
-      <Profile
-        user={selectedUser}
-
-        setSelectedUser={
-          setSelectedUser
-        }
-      />
-
-    </>
-
+    </div>
   );
 }
 
